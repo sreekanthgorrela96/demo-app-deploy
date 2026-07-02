@@ -1,0 +1,13 @@
+{
+  "name": "demo-app",
+  "version": "1.0.0",
+  "description": "Sample HTTP API for Jenkins CI + Argo CD CD POC",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test tests/server.test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
