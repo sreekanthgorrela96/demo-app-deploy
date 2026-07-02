@@ -1,0 +1,19 @@
+replicaCount: 1
+
+image:
+  repository: 123456789012.dkr.ecr.us-east-1.amazonaws.com/demo-app
+  tag: 1.0.0-latest
+
+ingress:
+  enabled: true
+  className: nginx
+  hosts:
+    - host: demo-app-dev.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+
+config:
+  logLevel: debug
+
+environment: dev
