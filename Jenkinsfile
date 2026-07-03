@@ -4,12 +4,12 @@ pipeline {
   environment {
     APP_NAME         = 'demo-app'
     APP_VERSION      = '1.0.0'
-    AWS_REGION       = "${env.AWS_REGION ?: 'us-east-1'}"
-    AWS_ACCOUNT_ID   = "${env.AWS_ACCOUNT_ID ?: '123456789012'}"
+    AWS_REGION       = "${env.AWS_REGION ?: 'ap-south-2'}"
+    AWS_ACCOUNT_ID   = "${env.AWS_ACCOUNT_ID ?: '483955930955'}"
     ECR_REPO         = "${env.ECR_REPO ?: 'demo-app'}"
     REGISTRY         = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
-    DEPLOY_REPO_URL  = "${env.DEPLOY_REPO_URL ?: 'https://github.com/YOUR_ORG/demo-app-deploy.git'}"
-    DEPLOY_REPO_CRED = 'deploy-repo-git'
+    DEPLOY_REPO_URL  = "${env.DEPLOY_REPO_URL ?: 'https://github.com/sreekanthgorrela96/demo-app-deploy.git'}"
+    DEPLOY_REPO_CRED = 'github-token2'
     AWS_CRED         = 'aws-jenkins'
     GIT_USER_EMAIL   = 'jenkins@example.com'
     GIT_USER_NAME    = 'Jenkins CI'
@@ -24,7 +24,7 @@ pipeline {
 
     stage('Unit Tests') {
       steps {
-        sh 'npm test'
+        sh 'docker run --rm -v "$PWD:/app" -w /app node:20-alpine npm test'
       }
     }
 
@@ -72,10 +72,10 @@ pipeline {
             git config user.email "${GIT_USER_EMAIL}"
             git config user.name "${GIT_USER_NAME}"
 
-            sed -i 's|^  repository: .*|  repository: ${REGISTRY}/${ECR_REPO}|' deploy/demo-app/values-dev.yaml
-            sed -i 's/^  tag: .*/  tag: ${IMAGE_TAG}/' deploy/demo-app/values-dev.yaml
+            sed -i 's|^  repository: .*|  repository: ${REGISTRY}/${ECR_REPO}|' demo-app/values-dev.yaml
+            sed -i 's/^  tag: .*/  tag: ${IMAGE_TAG}/' demo-app/values-dev.yaml
 
-            git add deploy/demo-app/values-dev.yaml
+            git add demo-app/values-dev.yaml
             git diff --cached --quiet || git commit -m "ci(${APP_NAME}): deploy ${IMAGE_TAG} to dev [skip ci]"
             git push origin main
           """
