@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: demo-app
+  namespace: cicd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+  labels:
+    app.kubernetes.io/managed-by: argocd
+spec:
+  description: Demo application GitOps project
+  sourceRepos:
+    - "*"
+  destinations:
+    - namespace: poc-dev
+      server: https://kubernetes.default.svc
+    - namespace: poc-qa
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: "*"
+      kind: "*"

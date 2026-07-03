@@ -4,6 +4,10 @@ kind: ApplicationSet
 metadata:
   name: demo-app-dev
   namespace: cicd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+  labels:
+    app.kubernetes.io/managed-by: argocd
 spec:
   generators:
     - list:
@@ -13,6 +17,12 @@ spec:
   template:
     metadata:
       name: demo-app-dev
+      annotations:
+        notifications.argoproj.io/subscribe.on-sync-succeeded.slack: ""
+        notifications.argoproj.io/subscribe.on-sync-failed.slack: ""
+        notifications.argoproj.io/subscribe.on-health-degraded.slack: ""
+      labels:
+        environment: dev
     spec:
       project: demo-app
       source:
@@ -38,6 +48,10 @@ kind: ApplicationSet
 metadata:
   name: demo-app-qa
   namespace: cicd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+  labels:
+    app.kubernetes.io/managed-by: argocd
 spec:
   generators:
     - list:
@@ -47,6 +61,12 @@ spec:
   template:
     metadata:
       name: demo-app-qa
+      annotations:
+        notifications.argoproj.io/subscribe.on-sync-succeeded.slack: ""
+        notifications.argoproj.io/subscribe.on-sync-failed.slack: ""
+        notifications.argoproj.io/subscribe.on-health-degraded.slack: ""
+      labels:
+        environment: qa
     spec:
       project: demo-app
       source:
