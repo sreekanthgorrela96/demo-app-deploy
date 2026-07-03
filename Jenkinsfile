@@ -40,7 +40,11 @@ pipeline {
           passwordVariable: 'AWS_SECRET_ACCESS_KEY'
         )]) {
           sh """
-            aws ecr get-login-password --region ${AWS_REGION} | \
+            docker run --rm \\
+              -e AWS_ACCESS_KEY_ID \\
+              -e AWS_SECRET_ACCESS_KEY \\
+              -e AWS_DEFAULT_REGION=${AWS_REGION} \\
+              amazon/aws-cli ecr get-login-password --region ${AWS_REGION} | \\
               docker login --username AWS --password-stdin ${REGISTRY}
             docker build -t ${FULL_IMAGE} -f Dockerfile .
             docker push ${FULL_IMAGE}
