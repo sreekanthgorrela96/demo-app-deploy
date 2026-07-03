@@ -16,12 +16,6 @@ pipeline {
   }
 
   stages {
-    stage('Checkout App') {
-      steps {
-        checkout scm
-      }
-    }
-
     stage('Unit Tests') {
       steps {
         sh 'docker build --target test -f Dockerfile .'
@@ -48,7 +42,7 @@ pipeline {
           sh """
             aws ecr get-login-password --region ${AWS_REGION} | \
               docker login --username AWS --password-stdin ${REGISTRY}
-            docker build -t ${FULL_IMAGE} .
+            docker build -t ${FULL_IMAGE} -f Dockerfile .
             docker push ${FULL_IMAGE}
           """
         }

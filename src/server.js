@@ -1,8 +1,6 @@
 const http = require("http");
 
 const PORT = process.env.PORT || 8080;
-const APP_VERSION = process.env.APP_VERSION || "dev";
-const ENVIRONMENT = process.env.ENVIRONMENT || "dev";
 const LOG_LEVEL = process.env.LOG_LEVEL || "info";
 
 function log(level, message) {
@@ -13,6 +11,9 @@ function log(level, message) {
 }
 
 function createServer() {
+  const appVersion = process.env.APP_VERSION || "dev";
+  const environment = process.env.ENVIRONMENT || "dev";
+
   return http.createServer((req, res) => {
     if (req.url === "/health") {
       res.writeHead(200, { "Content-Type": "application/json" });
@@ -24,8 +25,8 @@ function createServer() {
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(
         JSON.stringify({
-          version: APP_VERSION,
-          environment: ENVIRONMENT,
+          version: appVersion,
+          environment: environment,
         })
       );
       return;
