@@ -1,6 +1,14 @@
 pipeline {
   agent any
 
+  parameters {
+    booleanParam(
+      name: 'PROMOTE_TO_QA',
+      defaultValue: false,
+      description: 'After dev deploy, also update values-qa.yaml (Sync demo-app-qa manually in Argo CD)'
+    )
+  }
+
   environment {
     APP_NAME         = 'demo-app'
     APP_VERSION      = '1.0.0'
@@ -99,12 +107,48 @@ pipeline {
         }
       }
     }
+    stage('Promote to QA') {
+      when {
+        expression { return params.PROMOTE_TO_QA }
+      }
+      steps {
+        withCredentials([usernamePassword(
+          credentialsId: DEPLOY_REPO_CRED,
+          usernameVariable: 'GIT_USERNAME',
+          passwordVariable: 'GIT_PASSWORD'
+        )]) {
+          sh """
+            set -e
+            rm -rf deploy-repo
+            git clone https://\${GIT_USERNAME}:\${GIT_PASSWORD}@${DEPLOY_REPO_URL.replace('https://', '')} deploy-repo
+            cd deploy-repo
+
+            git config user.email "${GIT_USER_EMAIL}"
+            git config user.name "${GIT_USER_NAME}"
+
+            sed -i 's|^  repository: .*|  repository: ${REGISTRY}/${ECR_REPO}|' demo-app/values-qa.yaml
+            sed -i 's/^  tag: .*/  tag: ${IMAGE_TAG}/' demo-app/values-qa.yaml
+
+            git add demo-app/values-qa.yaml
+            git diff --cached --quiet && echo "QA already on ${IMAGE_TAG}" && exit 0
+            git commit -m "ci(${APP_NAME}): promote ${IMAGE_TAG} to qa [skip ci]"
+            git push origin main
+          """
+        }
+      }
+    }
   }
 
   post {
     success {
       echo "Image ${FULL_IMAGE} pushed to ECR. Argo CD will sync demo-app-dev automatically."
-      echo "Promote to QA: run the demo-app-promote-qa Jenkins job with IMAGE_TAG=${IMAGE_TAG}, then Sync demo-app-qa in Argo CD."
+      script {
+        if (params.PROMOTE_TO_QA) {
+          echo "QA values updated to ${IMAGE_TAG}. Sync demo-app-qa in Argo CD UI."
+        } else {
+          echo "Promote to QA: re-run with PROMOTE_TO_QA checked, or use demo-app-promote-qa job."
+        }
+      }
     }
   }
 }
