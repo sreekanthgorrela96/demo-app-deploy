@@ -24,7 +24,7 @@ pipeline {
 
     stage('Unit Tests') {
       steps {
-        sh 'docker run --rm -v "$PWD:/app" -w /app node:20-alpine npm test'
+        sh 'docker build --target test -f Dockerfile .'
       }
     }
 
