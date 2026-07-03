@@ -32,7 +32,27 @@ pipeline {
       }
     }
 
-    stage('ECR Login, Build & Push') {
+    stage('Build Image') {
+      steps {
+        sh "docker build -t ${FULL_IMAGE} -f Dockerfile ."
+      }
+    }
+
+    stage('Trivy Scan') {
+      steps {
+        sh """
+          docker run --rm \\
+            -v /var/run/docker.sock:/var/run/docker.sock \\
+            aquasec/trivy image \\
+              --severity HIGH,CRITICAL \\
+              --ignore-unfixed \\
+              --exit-code 1 \\
+              ${FULL_IMAGE}
+        """
+      }
+    }
+
+    stage('ECR Login & Push') {
       steps {
         withCredentials([usernamePassword(
           credentialsId: AWS_CRED,
@@ -46,7 +66,6 @@ pipeline {
               -e AWS_DEFAULT_REGION=${AWS_REGION} \\
               amazon/aws-cli ecr get-login-password --region ${AWS_REGION} | \\
               docker login --username AWS --password-stdin ${REGISTRY}
-            docker build -t ${FULL_IMAGE} -f Dockerfile .
             docker push ${FULL_IMAGE}
           """
         }
