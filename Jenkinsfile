@@ -104,7 +104,7 @@ pipeline {
   post {
     success {
       echo "Image ${FULL_IMAGE} pushed to ECR. Argo CD will sync demo-app-dev automatically."
-      echo "Promote to QA: update values-qa.yaml and sync demo-app-qa in Argo CD UI."
+      echo "Promote to QA: run the demo-app-promote-qa Jenkins job with IMAGE_TAG=${IMAGE_TAG}, then Sync demo-app-qa in Argo CD."
     }
   }
 }

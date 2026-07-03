@@ -1,0 +1,71 @@
+pipeline {
+  agent any
+
+  parameters {
+    string(
+      name: 'IMAGE_TAG',
+      description: 'ECR image tag to promote to QA (e.g. 1.0.0-e52e5ac)',
+      trim: true
+    )
+  }
+
+  environment {
+    APP_NAME         = 'demo-app'
+    AWS_REGION       = "${env.AWS_REGION ?: 'ap-south-2'}"
+    AWS_ACCOUNT_ID   = "${env.AWS_ACCOUNT_ID ?: '483955930955'}"
+    ECR_REPO         = "${env.ECR_REPO ?: 'demo-app'}"
+    REGISTRY         = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+    DEPLOY_REPO_URL  = "${env.DEPLOY_REPO_URL ?: 'https://github.com/sreekanthgorrela96/demo-app-deploy.git'}"
+    DEPLOY_REPO_CRED = 'github-token2'
+    GIT_USER_EMAIL   = 'jenkins@example.com'
+    GIT_USER_NAME    = 'Jenkins CI'
+  }
+
+  stages {
+    stage('Validate') {
+      steps {
+        script {
+          if (!params.IMAGE_TAG?.trim()) {
+            error('IMAGE_TAG parameter is required')
+          }
+          env.IMAGE_TAG = params.IMAGE_TAG.trim()
+        }
+      }
+    }
+
+    stage('Promote to QA') {
+      steps {
+        withCredentials([usernamePassword(
+          credentialsId: DEPLOY_REPO_CRED,
+          usernameVariable: 'GIT_USERNAME',
+          passwordVariable: 'GIT_PASSWORD'
+        )]) {
+          sh """
+            set -e
+            rm -rf deploy-repo
+            git clone https://\${GIT_USERNAME}:\${GIT_PASSWORD}@${DEPLOY_REPO_URL.replace('https://', '')} deploy-repo
+            cd deploy-repo
+
+            git config user.email "${GIT_USER_EMAIL}"
+            git config user.name "${GIT_USER_NAME}"
+
+            sed -i 's|^  repository: .*|  repository: ${REGISTRY}/${ECR_REPO}|' demo-app/values-qa.yaml
+            sed -i 's/^  tag: .*/  tag: ${IMAGE_TAG}/' demo-app/values-qa.yaml
+
+            git add demo-app/values-qa.yaml
+            git diff --cached --quiet && echo "QA already on ${IMAGE_TAG}" && exit 0
+            git commit -m "ci(${APP_NAME}): promote ${IMAGE_TAG} to qa [skip ci]"
+            git push origin main
+          """
+        }
+      }
+    }
+  }
+
+  post {
+    success {
+      echo "QA values updated to ${IMAGE_TAG}."
+      echo "Open Argo CD and Sync demo-app-qa (manual sync gate)."
+    }
+  }
+}

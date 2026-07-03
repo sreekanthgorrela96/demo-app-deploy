@@ -1,0 +1,48 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: demo-app
+  namespace: cicd
+  labels:
+    app.kubernetes.io/managed-by: terraform
+spec:
+  generators:
+    - list:
+        elements:
+          - env: dev
+            namespace: poc-dev
+            valuesFile: values-dev.yaml
+            autoSync: "true"
+          - env: qa
+            namespace: poc-qa
+            valuesFile: values-qa.yaml
+            autoSync: "false"
+  template:
+    metadata:
+      name: demo-app-{{env}}
+      labels:
+        environment: "{{env}}"
+        app.kubernetes.io/managed-by: terraform
+    spec:
+      project: demo-app
+      source:
+        repoURL: https://github.com/sreekanthgorrela96/demo-app-deploy.git
+        targetRevision: main
+        path: demo-app
+        helm:
+          valueFiles:
+            - "{{valuesFile}}"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "{{namespace}}"
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true
+  templatePatch: |
+    {{- if eq .autoSync "true" }}
+    spec:
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+    {{- end }}
