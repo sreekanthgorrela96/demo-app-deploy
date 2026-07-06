@@ -2,6 +2,7 @@ FROM node:20-alpine AS test
 WORKDIR /app
 COPY package.json ./
 COPY src ./src
+COPY public ./public
 COPY tests ./tests
 RUN npm test
 
@@ -15,6 +16,7 @@ RUN apk upgrade --no-cache && \
     rm -f /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack /usr/local/bin/yarn /usr/local/bin/yarnpkg
 COPY package.json ./
 COPY src ./src
+COPY public ./public
 USER app
 EXPOSE 8080
 ENV PORT=8080

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Demo App — Jenkins + Argo CD POC</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="hero">
+    <p class="badge" id="env-badge">POC</p>
+    <h1>Cloud Native Demo Gallery</h1>
+    <p class="subtitle">Sample Node.js app deployed via Jenkins CI → ECR → Argo CD → EKS</p>
+    <div class="meta">
+      <span>Version: <strong id="version">—</strong></span>
+      <span>Environment: <strong id="environment">—</strong></span>
+      <span>Health: <strong id="health">—</strong></span>
+    </div>
+  </header>
+
+  <main class="gallery">
+    <figure class="card">
+      <img src="/images/pipeline.svg" alt="CI/CD pipeline illustration" />
+      <figcaption>Continuous Integration — Jenkins builds &amp; scans every release</figcaption>
+    </figure>
+    <figure class="card">
+      <img src="/images/gitops.svg" alt="GitOps illustration" />
+      <figcaption>GitOps — Argo CD keeps the cluster in sync with Git</figcaption>
+    </figure>
+    <figure class="card">
+      <img src="/images/kubernetes.svg" alt="Kubernetes illustration" />
+      <figcaption>Kubernetes — Running on AWS EKS in ap-south-2</figcaption>
+    </figure>
+    <figure class="card">
+      <img src="/images/containers.svg" alt="Containers illustration" />
+      <figcaption>Containers — Immutable images stored in Amazon ECR</figcaption>
+    </figure>
+  </main>
+
+  <footer>
+    <p>Jenkins CI + Argo CD CD + AWS EKS Proof of Concept</p>
+  </footer>
+
+  <script>
+    fetch("/version").then((r) => r.json()).then((data) => {
+      document.getElementById("version").textContent = data.version;
+      document.getElementById("environment").textContent = data.environment;
+      document.getElementById("env-badge").textContent = data.environment.toUpperCase();
+      document.body.dataset.environment = data.environment;
+    });
+    fetch("/health").then((r) => r.json()).then((data) => {
+      document.getElementById("health").textContent = data.status;
+    });
+  </script>
+</body>
+</html>

@@ -45,3 +45,15 @@ test("GET /version returns version payload", async () => {
 
   server.close();
 });
+
+test("GET / returns HTML gallery page", async () => {
+  const server = createServer();
+  await new Promise((resolve) => server.listen(0, resolve));
+
+  const response = await request(server, "/");
+  assert.equal(response.status, 200);
+  assert.match(response.body, /Cloud Native Demo Gallery/);
+  assert.match(response.body, /images\/pipeline\.svg/);
+
+  server.close();
+});
