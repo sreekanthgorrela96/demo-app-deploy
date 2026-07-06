@@ -2,7 +2,7 @@ replicaCount: 1
 
 image:
   repository: 422836431778.dkr.ecr.ap-south-2.amazonaws.com/demo-app
-  tag: 1.0.0-4a57565
+  tag: 1.0.0-4d6df98
 
 ingress:
   enabled: true
