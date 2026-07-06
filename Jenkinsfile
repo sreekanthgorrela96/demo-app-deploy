@@ -13,7 +13,7 @@ pipeline {
     APP_NAME         = 'demo-app'
     APP_VERSION      = '1.0.0'
     AWS_REGION       = "${env.AWS_REGION ?: 'ap-south-2'}"
-    AWS_ACCOUNT_ID   = "${env.AWS_ACCOUNT_ID ?: '483955930955'}"
+    AWS_ACCOUNT_ID   = "${env.AWS_ACCOUNT_ID ?: '422836431778'}"
     ECR_REPO         = "${env.ECR_REPO ?: 'demo-app'}"
     REGISTRY         = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
     DEPLOY_REPO_URL  = "${env.DEPLOY_REPO_URL ?: 'https://github.com/sreekanthgorrela96/demo-app-deploy.git'}"
